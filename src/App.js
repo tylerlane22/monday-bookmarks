@@ -12,6 +12,7 @@ class App extends React.Component {
     this.state = {
       settings: {},
       name: "",
+      bookmarks: [{}],
     };
   }
 
@@ -19,17 +20,36 @@ class App extends React.Component {
     // TODO: set up event listeners
   }
 
+  getBookmarkList(){
+    monday.storage.instance.getItem('bookmarks').then(res => {
+      // let keys = Object.keys(res.data.value);
+      // console.log(keys);
+      console.log(res.data.value);
+      var returnedValue = JSON.parse(res.data.value);
+      this.setState({bookmarks: returnedValue});
+      return;
+   })
+  }
+
   render() {
-    var practiceBookmark = {
+    const bookmarkList = this.state.bookmarks;
+    
+    var practiceBookmarks = [{
+      "name": "ESPN",
+      "url": "https://espn.com"
+    },{
       "name": "Heap",
       "url": "https://heap.io"
-    }
+    }]
+
     return (
       <div className="App">
-        <Bookmark />
+        {bookmarkList.map((bookmark) =>
+        <Bookmark url={bookmark.url} name={bookmark.name} />
+        )}
         {/* <CreateBookmarkForm /> */}
-        <button onClick={() => saveBookmark(practiceBookmark)}>Save bookmark</button>
-        <button onClick={() => getBookmark()}>Get bookmark</button>
+        <button onClick={() => saveBookmark(practiceBookmarks)}>Save bookmark</button>
+        <button onClick={() => this.getBookmarkList()}>Get bookmarks</button>
       </div>
     );
   }
@@ -41,8 +61,8 @@ class Bookmark extends React.Component {
     return (
     <div className="bookmark">
       <img src="https://images.g2crowd.com/uploads/product/image/large_detail/large_detail_e6baf1b33e53120e6109fb1c1c71c3f3/heap.png" alt="Logo" />
-      <h2>BM Title</h2>
-      <a href="https://www.w3schools.com" target="_blank" rel="noopener noreferrer">
+      <h2>{this.props.name}</h2>
+      <a href={this.props.url} target="_blank" rel="noopener noreferrer">
           Go to link
         </a>
     </div>
@@ -119,12 +139,16 @@ function saveBookmark(bookmark){
   })
 }
 
+/*
+**** MOVED THIS FUNCTION INSIDE APP COMPONENT SO IT CAN SAVE TO STATE ****
 function getBookmark(){
   monday.storage.instance.getItem('bookmarks').then(res => {
     // let keys = Object.keys(res.data.value);
     // console.log(keys);
     console.log(res.data.value);
+    return res.data.value
  })
 }
+*/
 
 export default App;
