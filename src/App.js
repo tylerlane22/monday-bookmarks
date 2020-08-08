@@ -12,6 +12,7 @@ class App extends React.Component {
     this.state = {
       settings: {},
       name: "",
+      bookmarks: [{}],
     };
   }
 
@@ -19,19 +20,44 @@ class App extends React.Component {
     // TODO: set up event listeners
   }
 
+  getBookmarkList(){
+    monday.storage.instance.getItem('bookmarks').then(res => {
+      // let keys = Object.keys(res.data.value);
+      // console.log(keys);
+      console.log(res.data.value);
+      var returnedValue = JSON.parse(res.data.value);
+      this.setState({bookmarks: returnedValue});
+      return;
+   })
+  }
+
   render() {
-    var practiceBookmark = {
+    const bookmarkList = this.state.bookmarks;
+    
+    var practiceBookmarks = [{
+      "name": "ESPN",
+      "url": "https://espn.com"
+    },{
       "name": "Heap",
       "url": "https://heap.io"
-    }
+    }]
+
     return (
       <div className="App">
+
         <Bookmark />
         <Bookmark />
         <Bookmark />
+      
+        /*
+        {bookmarkList.map((bookmark) =>
+        <Bookmark url={bookmark.url} name={bookmark.name} />
+        )}
+        */
+
         {/* <CreateBookmarkForm /> */}
-        <button onClick={() => saveBookmark(practiceBookmark)}>Save bookmark</button>
-        <button onClick={() => getBookmark()}>Get bookmark</button>
+        <button onClick={() => saveBookmark(practiceBookmarks)}>Save bookmark</button>
+        <button onClick={() => this.getBookmarkList()}>Get bookmarks</button>
       </div>
     );
   }
@@ -136,12 +162,16 @@ function saveBookmark(bookmark){
   })
 }
 
+/*
+**** MOVED THIS FUNCTION INSIDE APP COMPONENT SO IT CAN SAVE TO STATE ****
 function getBookmark(){
   monday.storage.instance.getItem('bookmarks').then(res => {
     // let keys = Object.keys(res.data.value);
     // console.log(keys);
     console.log(res.data.value);
+    return res.data.value
  })
 }
+*/
 
 export default App;
