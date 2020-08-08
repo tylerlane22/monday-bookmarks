@@ -27,6 +27,8 @@ class App extends React.Component {
     return (
       <div className="App">
         <Bookmark />
+        <Bookmark />
+        <Bookmark />
         {/* <CreateBookmarkForm /> */}
         <button onClick={() => saveBookmark(practiceBookmark)}>Save bookmark</button>
         <button onClick={() => getBookmark()}>Get bookmark</button>
@@ -37,14 +39,29 @@ class App extends React.Component {
 
 class Bookmark extends React.Component {
 
+  handleClick = () => {
+    console.log('Clicked');
+    window.open("https://www.w3schools.com", '_blank', 'noopener,noreferrer');
+  }
+
   render(){
     return (
-    <div className="bookmark">
-      <img src="https://images.g2crowd.com/uploads/product/image/large_detail/large_detail_e6baf1b33e53120e6109fb1c1c71c3f3/heap.png" alt="Logo" />
-      <h2>BM Title</h2>
-      <a href="https://www.w3schools.com" target="_blank" rel="noopener noreferrer">
-          Go to link
-        </a>
+    <div className="bookmark-card-component" >
+      <div className="bookmark-card-image" onClick={this.handleClick}>
+        <div className="bookmark-img">
+          <img className="bookmark-photo" src="https://heap.io/favicon.ico" alt="Logo" />
+        </div>
+      </div>
+      <div className="bookmark-card-container" onClick={this.handleClick}>
+        <div className="bookmark-card-inner">
+          <div className="bookmark-card-content">
+            <div className="bookmark-card-title">BM Title</div>
+            <div className="bookmark-card-subtitle">
+              <div className="multiline-ellipsis-component">Checkout data for the project on Confluence.</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     );
   }
