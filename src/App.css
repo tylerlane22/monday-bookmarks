@@ -21,12 +21,12 @@ body {
   /* min-width: 290px;
   max-width: 320px; */
   position: relative;
-  
+  cursor: pointer;
 }
 
 .bookmark-card-image {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   position: relative;
   /* top: 40px; */
   left: 8px;
@@ -38,9 +38,10 @@ body {
 
 .bookmark-remove.editable {
   position: relative;
-  left: 168px;
+  left: 208px;
   z-index: 1;
-  top: -8px;
+  top: -32px;
+  width: 24px;
   /* border: 4px solid white; */
   /* box-shadow: 0 0px 8px 0px rgba(0, 0, 0, 0.1);
   border-radius: 6px; */
@@ -49,8 +50,8 @@ body {
 button {
   width: 64px;
   height: 24px;
-  weight: 400;
-  fill: white;
+  /* font-size: 14px; */
+  /* fill: white; */
   border: 0px;
   border-radius: 64px;
   outline: none;
@@ -62,7 +63,11 @@ button:hover {
 }
 
 .danger-button {
-  color: #F65F7C;
+  width: 24px;
+  /* height: 24px; */
+  background-color: Transparent;
+  font-size: 14px;
+  color: #C5C7D0;
 }
 .danger-button:hover {
   color: white;
@@ -95,7 +100,7 @@ button:hover {
   border-radius: 4px;
   transition: box-shadow 0.1s ease, border-color 0.1s ease;
   /* bottom: 32px; */
-  top: -40px;
+  top: -56px;
   position: relative;
   overflow: hidden;
 }
@@ -105,7 +110,7 @@ button:hover {
 }
 
 .bookmark-card-inner {
-  padding: 8px 8px 8px 72px;
+  padding: 8px 8px 8px 56px;
   transition: padding 0.16s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   background: white;
@@ -142,4 +147,37 @@ button:hover {
 
 .multiline-ellipsis-component {
   overflow-wrap: break-word;
+}
+
+
+
+.new-bookmark-input {
+  border-radius: 4px;
+  border: 1px solid;
+  font-size: 16px;
+  padding: 8px 16px;
+  outline: 0;
+  position: relative;
+  margin: 8px;
+
+
+}
+
+.addNew {
+  height: 24px;
+  width: 24px;
+  font-size: 20px;
+  border-radius: 100%;
+  cursor: pointer;
+}
+
+
+.submitNew {
+  width: 64px;
+  height: 24px;
+  border: 0px;
+  border-radius: 64px;
+  outline: none;
+  margin: 8px;
+  cursor: pointer;
 }
