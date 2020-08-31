@@ -15,7 +15,19 @@ class App extends React.Component {
       name: "",
       bookmarks: [{}],
       editable: false,
+      adding: false,
+      newBookmarkName: '',
+      newBookmarkSubtitle: '',
+      newBookmarkURL: '',
     };
+
+    //bind functions
+    this.deleteBookmark = this.deleteBookmark.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
+    this.handleInputSubmit = this.handleInputSubmit.bind(this);
+
+    //load saved bookmarks on page load
+    this.getBookmarkList();
   }
 
   componentDidMount() {
@@ -23,29 +35,101 @@ class App extends React.Component {
   }
 
   getBookmarkList(){
-    monday.storage.instance.getItem('bookmarks').then(res => {
+    console.log('starting getBookmarkList...');
+    return Promise.resolve(monday.storage.instance.getItem('bookmarks').then(res => {
       // let keys = Object.keys(res.data.value);
       // console.log(keys);
       console.log(res.data.value);
       var returnedValue = JSON.parse(res.data.value);
       if(isEmpty(returnedValue)){
         this.setState({bookmarks: [{}]});
+        this.setState({adding: true});
         return;
       } else {
+        console.log('getBookmarkCompleting...');
         this.setState({bookmarks: returnedValue});
       }
-   });
-
+   }));
   }
 
+  addNewBookmark(){
+    this.setState({adding: true});
+  }
 
   editBookmarks(){
      this.setState({editable: true});
   }
 
   viewBookmarks(){
-    this.setState({editable: false});
+    console.log('inside view bookmarks...');
+    this.getBookmarkList().then( res => {
+      console.log('inside view bookmarks promise - should be last...');
+      this.setState({editable: false});
+      this.setState({adding: false});
+    });
  }
+
+  /**
+   * Deletes a single bookmark
+   * @param {String} bookmarkID - Bookmark to delete.
+   */
+  deleteBookmark(key){
+
+    console.log('trying to delete: ' + key);  
+    
+    return Promise.resolve(monday.storage.instance.getItem('bookmarks').then(res => {
+      let currentBookmarks = [{}];
+      currentBookmarks = JSON.parse(res.data.value);
+
+      if(isEmpty(currentBookmarks)){
+        // this.setState({bookmarks: [{}]});
+        this.getBookmarkList();
+        return;
+      } else {
+        var newBookmarks = currentBookmarks.filter(bookmark => bookmark.key !== key);
+        saveBookmarks(newBookmarks).then(res => {
+          this.getBookmarkList();
+          return;
+        });
+      }
+    }));
+  
+  }
+
+  handleInputChange(event){
+    const value = event.target.value;
+    const name = event.target.name;
+
+    this.setState({
+      [name]: value
+    });
+  }
+
+  handleInputSubmit(event){
+    //Get favicon
+    var faviconURL = getFaviconURL(this.state.newBookmarkURL);
+
+    //save bookmark
+    var newBookmark = {
+      // "key": "2",
+      "name": this.state.newBookmarkName,
+      "subtitle": this.state.newBookmarkSubtitle,
+      "url": this.state.newBookmarkURL,
+      "favicon": faviconURL 
+    }
+
+    console.log('starting to add new bookmark...');
+    addBookmark(newBookmark).then(res => {
+      console.log('switching to viewBookmarks...');
+      this.viewBookmarks();
+    });
+
+    //go back to main view
+    //or maybe remove this line.
+    event.preventDefault();
+  
+
+  }
 
   render() {
     const bookmarkList = this.state.bookmarks;
@@ -71,39 +155,55 @@ class App extends React.Component {
       "favicon": "https://google.com/favicon.ico" 
     }
 
-    if (this.state.editable){
+
+
+    if (this.state.adding) {
       return (
-      <div className="App">
-
-          {bookmarkList.map((bookmark) =>
-          <EditableBookmark key={bookmark.key} id={bookmark.key} url={bookmark.url} name={bookmark.name} favicon={bookmark.favicon} subtitle={bookmark.subtitle}/>
-          )}
-
-  
-          {/* <CreateBookmarkForm /> */}
-          <button onClick={() => addBookmark(pracAddSingleBookmark)}>Add</button>
-          <button onClick={() => this.getBookmarkList()}>Refresh</button> 
-          <button onClick={() => deleteAllBookmarks()}>Clear All</button>
-          <button onClick={() => this.viewBookmarks()}>Finish</button>
-          <button onClick={() => getFaviconURL('https://stackoverflow.com/questions/8498592/extract-hostname-name-from-string')}>get favicon url</button>
+        <div className="App">
+          <form onSubmit={this.handleInputSubmit}>
+            <input 
+              name="newBookmarkName" 
+              className="new-bookmark-input" 
+              placeholder="New Bookmark Name"
+              onChange={this.handleInputChange}></input>
+            <input 
+              name="newBookmarkSubtitle" 
+              className="new-bookmark-input" 
+              placeholder="New Bookmark Subtitle"
+              onChange={this.handleInputChange}></input>
+            <input 
+              name="newBookmarkURL" 
+              className="new-bookmark-input" 
+              placeholder="New Bookmark URL"
+              onChange={this.handleInputChange}></input>
+            <input className="submitNew" type="submit" value="Save"></input>
+          </form>
+          <button onClick={() => this.viewBookmarks()}>Cancel</button>
         </div>
       );
-
     } else {
       return (
         <div className="App">
 
           {bookmarkList.map((bookmark) =>
-          <Bookmark key={bookmark.key} url={bookmark.url} name={bookmark.name} favicon={bookmark.favicon} subtitle={bookmark.subtitle}/>
+          <Bookmark 
+            id={bookmark.key}
+            url={bookmark.url} 
+            name={bookmark.name} 
+            favicon={bookmark.favicon} 
+            subtitle={bookmark.subtitle}
+            deleteBookmark={this.deleteBookmark}
+            />
           )}
           
   
           {/* <CreateBookmarkForm /> */}
-          <button onClick={() => saveBookmarks(practiceBookmarks)}>Set 2</button>
-          <button onClick={() => addBookmark(pracAddSingleBookmark)}>Add</button>
-          <button onClick={() => this.getBookmarkList()}>Refresh</button> 
-          <button onClick={() => deleteAllBookmarks()}>Clear All</button>
-          <button onClick={() => this.editBookmarks()}>Edit</button>
+          {/* <button onClick={() => saveBookmarks(practiceBookmarks)}>Set 2</button> */}
+          {/* <button onClick={() => addBookmark(pracAddSingleBookmark)}>Add</button> */}
+          {/* <button onClick={() => this.getBookmarkList()}>Refresh</button>  */}
+          {/* <button onClick={() => deleteAllBookmarks()}>Clear All</button> */}
+          <button className="addNew" onClick={() => this.addNewBookmark()}>+</button>
+          {/* <button onClick={() => this.editBookmarks()}>Edit</button> */}
         </div>
       );
     }
@@ -118,6 +218,14 @@ class Bookmark extends React.Component {
     window.open(this.props.url, '_blank', 'noopener,noreferrer');
   }
 
+  handleClickDelete(e){
+    //Delete bookmark
+    console.log('clicked');
+    // console.log(this.props);
+    console.log('deleting: ' + this.props.id);
+    this.props.deleteBookmark(this.props.id);
+  }
+
   render(){
     return (
     <div className="bookmark-card-component" >
@@ -125,6 +233,9 @@ class Bookmark extends React.Component {
         <div className="bookmark-img">
           <img className="bookmark-photo" src={this.props.favicon} alt="Logo" />
         </div>
+      </div>
+      <div className="bookmark-remove editable">
+          <button className="danger-button" onClick={this.handleClickDelete.bind(this)}>X</button>
       </div>
       <div className="bookmark-card-container" onClick={this.handleClick}>
         <div className="bookmark-card-inner">
@@ -141,6 +252,153 @@ class Bookmark extends React.Component {
   }
 }
 
+
+
+// ================= Backend ==================
+//https://jsdoc.app/tags-param.html <- how to document
+
+/**
+ * Saves bookmark(s) to Monday instance.
+ * @param {Object} bookmarkList - Bookmarks to save.
+ */
+function saveBookmarks(bookmarkList){
+  return Promise.resolve(monday.storage.instance.setItem('bookmarks', JSON.stringify(bookmarkList)).then(res => {
+    // console.log(res);
+    console.log('new bookmark saved!');
+  }))
+}
+
+/**
+ * Adds a new bookmark to Monday instance.
+ * @param {Object} bookmark - Bookmark to add.
+ */
+function addBookmark(bookmark){
+  var newKey = new Date().getTime().toString() + bookmark.name;
+
+  return monday.storage.instance.getItem('bookmarks').then(res => {
+    // let keys = Object.keys(res.data.value);
+    // console.log(keys);
+    // console.log(res.data.value);
+
+    let currentBookmarks = [{}];
+    currentBookmarks = JSON.parse(res.data.value);
+
+    if(isEmpty(currentBookmarks)){
+      var newBookmark = [{
+        "key": newKey,
+        "name": bookmark.name,
+        "subtitle": bookmark.subtitle,
+        "url": bookmark.url,
+        "favicon": bookmark.favicon
+      }]
+      console.log('starting to save new bookmark...');
+      return Promise.resolve(saveBookmarks(newBookmark));
+    } else {
+      var newBookmark = {
+        "key": newKey,
+        "name": bookmark.name,
+        "subtitle": bookmark.subtitle,
+        "url": bookmark.url,
+        "favicon": bookmark.favicon
+      }
+      console.log('starting to save new bookmark...');
+      currentBookmarks.push(newBookmark);
+      return Promise.resolve(saveBookmarks(currentBookmarks));
+    }
+ });
+}
+
+/**
+ * Deletes all bookmarks created
+ *
+ */
+function deleteAllBookmarks(){
+  monday.storage.instance.setItem('bookmarks', '{}').then(res => {
+    console.log(res);
+  });
+}
+
+
+
+
+
+/**
+ * Checks if an object is empty
+ * @param {Object} obj 
+ */
+function isEmpty(obj){
+  return Object.keys(obj).length === 0;
+}
+
+
+/**
+ * Get standard favicon.ico url based off any link
+ * @param {string} url 
+ */
+function getFaviconURL(url){
+  var favURL;
+  var a = document.createElement('a');
+  a.href = url;
+  favURL = 'https://' + a.hostname + '/favicon.ico';
+  console.log(favURL);
+  return favURL;
+}
+
+
+
+/*
+**** MOVED THIS FUNCTION INSIDE APP COMPONENT SO IT CAN SAVE TO STATE ****
+function getBookmark(){
+  monday.storage.instance.getItem('bookmarks').then(res => {
+    // let keys = Object.keys(res.data.value);
+    // console.log(keys);
+    console.log(res.data.value);
+    return res.data.value
+ })
+}
+*/
+
+export default App;
+
+
+
+
+
+// ================= Old Code for editable bookmarks ==================
+
+// ================= This part was in the main render ==================
+    // if (this.state.editable){
+    //   return (
+    //   <div className="App">
+
+    //       {bookmarkList.map((bookmark) =>
+    //       <EditableBookmark 
+    //         key={bookmark.key} 
+    //         id={bookmark.key} 
+    //         url={bookmark.url} 
+    //         name={bookmark.name} 
+    //         favicon={bookmark.favicon} 
+    //         subtitle={bookmark.subtitle}
+    //         refreshBookmarks={this.getBookmarkList}
+    //         deleteBookmark={this.deleteBookmark}
+    //         />
+    //       )}
+
+  
+    //       {/* <CreateBookmarkForm /> */}
+    //       <button onClick={() => addBookmark(pracAddSingleBookmark)}>Add</button>
+    //       <button onClick={() => this.getBookmarkList()}>Refresh</button> 
+    //       {/* <button onClick={() => deleteAllBookmarks()}>Clear All</button> */}
+    //       <button onClick={() => this.viewBookmarks()}>Save</button>
+    //       {/* <button onClick={() => getFaviconURL('https://stackoverflow.com/questions/8498592/extract-hostname-name-from-string')}>get favicon url</button> */}
+    //     </div>
+    //   );
+    // } 
+
+
+// ================= Here are the edibtable components ==================
+
+/*
 class EditableBookmark extends React.Component {
 
   constructor(props){
@@ -151,7 +409,7 @@ class EditableBookmark extends React.Component {
   handleClickDelete(e){
     //Delete bookmark
     console.log('deleting: ' + this.props.id);
-    deleteBookmark(this.props.id);
+    this.props.deleteBookmark(this.props.id);
   }
 
   render(){
@@ -180,16 +438,17 @@ class EditableBookmark extends React.Component {
   }
 }
 
+
 class NewBookmark extends React.Component {
 
   render(){
     return (
       <div className="bookmark-card-component" >
-      {/* <div className="bookmark-card-image">
-        <div className="bookmark-img">
-          <img className="bookmark-photo" src={this.props.favicon} alt="Logo" />
-        </div>
-      </div> */}
+      // { <div className="bookmark-card-image">
+      //   <div className="bookmark-img">
+      //     <img className="bookmark-photo" src={this.props.favicon} alt="Logo" />
+      //   </div>
+      // </div>}
       <div className="bookmark-card-container">
         <div className="bookmark-card-inner">
           <div className="bookmark-card-content">
@@ -206,6 +465,7 @@ class NewBookmark extends React.Component {
 
 }
 
+*/
 
 /*
 class CreateBookmarkForm extends React.Component {
@@ -262,131 +522,3 @@ class CreateBookmarkForm extends React.Component {
   }
 }
 */
-
-// ================= Backend ==================
-//https://jsdoc.app/tags-param.html <- how to document
-
-/**
- * Saves bookmark(s) to Monday instance.
- * @param {Object} bookmarkList - Bookmarks to save.
- */
-function saveBookmarks(bookmarkList){
-  monday.storage.instance.setItem('bookmarks', JSON.stringify(bookmarkList)).then(res => {
-    console.log(res);
-  })
-}
-
-/**
- * Adds a new bookmark to Monday instance.
- * @param {Object} bookmark - Bookmark to add.
- */
-function addBookmark(bookmark){
-  var newKey = new Date().getTime().toString() + bookmark.name;
-
-
-
-  monday.storage.instance.getItem('bookmarks').then(res => {
-    // let keys = Object.keys(res.data.value);
-    // console.log(keys);
-    // console.log(res.data.value);
-
-    let currentBookmarks = [{}];
-    currentBookmarks = JSON.parse(res.data.value);
-    
-
-    if(isEmpty(currentBookmarks)){
-      var newBookmark = [{
-        "key": newKey,
-        "name": bookmark.name,
-        "subtitle": bookmark.subtitle,
-        "url": bookmark.url,
-        "favicon": bookmark.favicon
-      }]
-      saveBookmarks(newBookmark);
-    } else {
-      var newBookmark = {
-        "key": newKey,
-        "name": bookmark.name,
-        "subtitle": bookmark.subtitle,
-        "url": bookmark.url,
-        "favicon": bookmark.favicon
-      }
-      currentBookmarks.push(newBookmark);
-      saveBookmarks(currentBookmarks);
-    }
-    // this.setState({bookmarks: newList});
-    // return; 
- })
-}
-
-/**
- * Deletes all bookmarks created
- *
- */
-function deleteAllBookmarks(){
-  monday.storage.instance.setItem('bookmarks', '{}').then(res => {
-    console.log(res);
-  });
-}
-
-/**
- * Deletes a single bookmark
- * @param {String} bookmarkID - Bookmark to delete.
- */
-function deleteBookmark(key){
-
-  console.log('trying to delete: ' + key);  
-  monday.storage.instance.getItem('bookmarks').then(res => {
-    let currentBookmarks = [{}];
-    currentBookmarks = JSON.parse(res.data.value);
-
-    if(isEmpty(currentBookmarks)){
-      // this.setState({bookmarks: [{}]});
-      return;
-    } else {
-      var newBookmarks = currentBookmarks.filter(bookmark => bookmark.key !== key);
-      saveBookmarks(newBookmarks);
-    }
- });
- 
-}
-
-
-
-/**
- * Checks if an object is empty
- * @param {Object} obj 
- */
-function isEmpty(obj){
-  return Object.keys(obj).length === 0;
-}
-
-
-/**
- * Get standard favicon.ico url based off any link
- * @param {string} url 
- */
-function getFaviconURL(url){
-  var favURL;
-  var a = document.createElement('a');
-  a.href = url;
-  favURL = 'https://' + a.hostname + '/favicon.ico';
-  console.log(favURL);
-  return favURL;
-}
-
-
-
-/*
-**** MOVED THIS FUNCTION INSIDE APP COMPONENT SO IT CAN SAVE TO STATE ****
-function getBookmark(){
-  monday.storage.instance.getItem('bookmarks').then(res => {
-    // let keys = Object.keys(res.data.value);
-    // console.log(keys);
-    console.log(res.data.value);
-    return res.data.value
- })
-}
-*/
-
-export default App;
