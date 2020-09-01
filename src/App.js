@@ -35,7 +35,7 @@ class App extends React.Component {
   }
 
   getBookmarkList(){
-    console.log('starting getBookmarkList...');
+    // console.log('starting getBookmarkList...');
     return Promise.resolve(monday.storage.instance.getItem('bookmarks').then(res => {
       // let keys = Object.keys(res.data.value);
       // console.log(keys);
@@ -61,9 +61,7 @@ class App extends React.Component {
   }
 
   viewBookmarks(){
-    console.log('inside view bookmarks...');
     this.getBookmarkList().then( res => {
-      console.log('inside view bookmarks promise - should be last...');
       this.setState({editable: false});
       this.setState({adding: false});
     });
@@ -74,9 +72,6 @@ class App extends React.Component {
    * @param {String} bookmarkID - Bookmark to delete.
    */
   deleteBookmark(key){
-
-    console.log('trying to delete: ' + key);  
-    
     return Promise.resolve(monday.storage.instance.getItem('bookmarks').then(res => {
       let currentBookmarks = [{}];
       currentBookmarks = JSON.parse(res.data.value);
@@ -118,22 +113,19 @@ class App extends React.Component {
       "favicon": faviconURL 
     }
 
-    console.log('starting to add new bookmark...');
     addBookmark(newBookmark).then(res => {
-      console.log('switching to viewBookmarks...');
       this.viewBookmarks();
     });
 
-    //go back to main view
-    //or maybe remove this line.
     event.preventDefault();
-  
 
   }
 
   render() {
     const bookmarkList = this.state.bookmarks;
-    
+
+    /* 
+    //PRACTICE BOOKMARKS
     var practiceBookmarks = [{
       "key": "1",
       "name": "ESPN",
@@ -154,7 +146,7 @@ class App extends React.Component {
       "url": "https://google.com",
       "favicon": "https://google.com/favicon.ico" 
     }
-
+    */
 
 
     if (this.state.adding) {
@@ -213,16 +205,10 @@ class App extends React.Component {
 class Bookmark extends React.Component {
 
   handleClick = () => {
-    console.log('Clicked');
-    // window.open("https://www.w3schools.com", '_blank', 'noopener,noreferrer');
     window.open(this.props.url, '_blank', 'noopener,noreferrer');
   }
 
   handleClickDelete(e){
-    //Delete bookmark
-    console.log('clicked');
-    // console.log(this.props);
-    console.log('deleting: ' + this.props.id);
     this.props.deleteBookmark(this.props.id);
   }
 
@@ -276,10 +262,6 @@ function addBookmark(bookmark){
   var newKey = new Date().getTime().toString() + bookmark.name;
 
   return monday.storage.instance.getItem('bookmarks').then(res => {
-    // let keys = Object.keys(res.data.value);
-    // console.log(keys);
-    // console.log(res.data.value);
-
     let currentBookmarks = [{}];
     currentBookmarks = JSON.parse(res.data.value);
 
@@ -320,8 +302,6 @@ function deleteAllBookmarks(){
 
 
 
-
-
 /**
  * Checks if an object is empty
  * @param {Object} obj 
@@ -345,180 +325,6 @@ function getFaviconURL(url){
 }
 
 
-
-/*
-**** MOVED THIS FUNCTION INSIDE APP COMPONENT SO IT CAN SAVE TO STATE ****
-function getBookmark(){
-  monday.storage.instance.getItem('bookmarks').then(res => {
-    // let keys = Object.keys(res.data.value);
-    // console.log(keys);
-    console.log(res.data.value);
-    return res.data.value
- })
-}
-*/
-
 export default App;
 
 
-
-
-
-// ================= Old Code for editable bookmarks ==================
-
-// ================= This part was in the main render ==================
-    // if (this.state.editable){
-    //   return (
-    //   <div className="App">
-
-    //       {bookmarkList.map((bookmark) =>
-    //       <EditableBookmark 
-    //         key={bookmark.key} 
-    //         id={bookmark.key} 
-    //         url={bookmark.url} 
-    //         name={bookmark.name} 
-    //         favicon={bookmark.favicon} 
-    //         subtitle={bookmark.subtitle}
-    //         refreshBookmarks={this.getBookmarkList}
-    //         deleteBookmark={this.deleteBookmark}
-    //         />
-    //       )}
-
-  
-    //       {/* <CreateBookmarkForm /> */}
-    //       <button onClick={() => addBookmark(pracAddSingleBookmark)}>Add</button>
-    //       <button onClick={() => this.getBookmarkList()}>Refresh</button> 
-    //       {/* <button onClick={() => deleteAllBookmarks()}>Clear All</button> */}
-    //       <button onClick={() => this.viewBookmarks()}>Save</button>
-    //       {/* <button onClick={() => getFaviconURL('https://stackoverflow.com/questions/8498592/extract-hostname-name-from-string')}>get favicon url</button> */}
-    //     </div>
-    //   );
-    // } 
-
-
-// ================= Here are the edibtable components ==================
-
-/*
-class EditableBookmark extends React.Component {
-
-  constructor(props){
-    super(props);
-    this.handleClickDelete = this.handleClickDelete.bind(this);
-  }
-
-  handleClickDelete(e){
-    //Delete bookmark
-    console.log('deleting: ' + this.props.id);
-    this.props.deleteBookmark(this.props.id);
-  }
-
-  render(){
-    return (
-    <div className="bookmark-card-component" >
-      <div className="bookmark-remove editable">
-          <button className="danger-button" onClick={this.handleClickDelete}>Remove</button>
-      </div>
-      <div className="bookmark-card-container editable">
-        <div className="bookmark-card-inner editable">
-          <div className="bookmark-card-content">
-            <div className="bookmark-card-title editable-text">
-              <div className="bookmark-card-title">{this.props.name}</div>
-            </div>
-            <div className="bookmark-card-subtitle">
-              <div className="multiline-ellipsis-component">{this.props.subtitle}</div>
-            </div>
-            <div className="bookmark-card-subtitle">
-              <div className="multiline-ellipsis-component">{this.props.url}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    );
-  }
-}
-
-
-class NewBookmark extends React.Component {
-
-  render(){
-    return (
-      <div className="bookmark-card-component" >
-      // { <div className="bookmark-card-image">
-      //   <div className="bookmark-img">
-      //     <img className="bookmark-photo" src={this.props.favicon} alt="Logo" />
-      //   </div>
-      // </div>}
-      <div className="bookmark-card-container">
-        <div className="bookmark-card-inner">
-          <div className="bookmark-card-content">
-            <div className="bookmark-card-title">Name</div>
-            <div className="bookmark-card-subtitle">
-              <div className="multiline-ellipsis-component">Subtitle</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    )
-  }
-
-}
-
-*/
-
-/*
-class CreateBookmarkForm extends React.Component {
-  //Learned here: https://reactjs.org/docs/forms.html#controlled-components
-  constructor(props) {
-    super(props);
-    this.state = {
-      url: '',
-      bookmarkName: ''
-    };
-
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  handleChange(event) {
-    console.log(event);
-    this.setState({
-      [url]: event.target.url,
-      [bookmarkName]: event.target.bookmarkName
-    });
-  }
-
-  handleSubmit(event) {
-    console.log('Submitted URL: ' + this.state.url);
-    console.log('Submitted Name: ' + this.state.bookmarkName);
-    console.log(this.state);
-    event.preventDefault();
-  }
-
-  render(){
-    return(
-      <form onSubmit={this.handleSubmit}>
-        <label>
-          URL
-          <input
-            name="url"
-            type="text"
-            value={this.state.url}
-            onChange={this.handleChange} />
-        </label>
-        <br />
-        <label>
-          Name:
-          <input
-            name="bookmarkName"
-            type="text"
-            value={this.state.bookmarkName}
-            onChange={this.handleChange} />
-        </label>
-        <input type="submit" value="Submit" />
-      </form>
-    );
-  }
-}
-*/
