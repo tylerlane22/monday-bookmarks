@@ -41,7 +41,7 @@ class App extends React.Component {
       // console.log(keys);
       console.log(res.data.value);
       var returnedValue = JSON.parse(res.data.value);
-      if(isEmpty(returnedValue)){
+      if(returnedValue === null){ //isEmpty(returnedValue) || 
         this.setState({bookmarks: [{}]});
         this.setState({adding: true});
         return;
@@ -76,7 +76,7 @@ class App extends React.Component {
       let currentBookmarks = [{}];
       currentBookmarks = JSON.parse(res.data.value);
 
-      if(isEmpty(currentBookmarks)){
+      if(currentBookmarks === null){ //isEmpty(currentBookmarks)
         // this.setState({bookmarks: [{}]});
         this.getBookmarkList();
         return;
@@ -265,7 +265,7 @@ function addBookmark(bookmark){
     let currentBookmarks = [{}];
     currentBookmarks = JSON.parse(res.data.value);
 
-    if(isEmpty(currentBookmarks)){
+    if(currentBookmarks === null){ //isEmpty(currentBookmarks)
       var newBookmark = [{
         "key": newKey,
         "name": bookmark.name,
